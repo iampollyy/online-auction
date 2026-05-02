@@ -1,0 +1,144 @@
+# Azure Pipelines - Artifact Auction Microservices (Monorepo)
+# Runs tests for all three services in parallel
+
+trigger:
+  - main
+  - master
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: SyntaxCheck
+    displayName: "Syntax Check - All Services"
+    jobs:
+      - job: SyntaxCheckArtwork
+        displayName: "Syntax Check - Artwork Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              find artwork_service -name "*.py" -not -path "*/__pycache__/*" | while read f; do
+                python -m py_compile "$f" || exit 1
+              done
+            displayName: "Check Artwork Service syntax"
+
+      - job: SyntaxCheckBid
+        displayName: "Syntax Check - Bid Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              find bid_service -name "*.py" -not -path "*/__pycache__/*" | while read f; do
+                python -m py_compile "$f" || exit 1
+              done
+            displayName: "Check Bid Service syntax"
+
+      - job: SyntaxCheckDispute
+        displayName: "Syntax Check - Dispute Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              find dispute_service -name "*.py" -not -path "*/__pycache__/*" | while read f; do
+                python -m py_compile "$f" || exit 1
+              done
+            displayName: "Check Dispute Service syntax"
+
+  - stage: UnitTests
+    displayName: "Unit Tests - All Services"
+    dependsOn: SyntaxCheck
+    condition: succeeded()
+    jobs:
+      - job: TestArtwork
+        displayName: "Tests - Artwork Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              cd artwork_service
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: "Install Artwork Service dependencies"
+
+          - script: |
+              cd artwork_service
+              python -m pytest tests/ --junitxml=../test-results-artwork.xml -v
+            displayName: "Run Artwork Service tests"
+            continueOnError: true
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "test-results-artwork.xml"
+              testRunTitle: "Artwork Service Tests"
+            displayName: "Publish Artwork test results"
+
+      - job: TestBid
+        displayName: "Tests - Bid Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              cd bid_service
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: "Install Bid Service dependencies"
+
+          - script: |
+              cd bid_service
+              python -m pytest tests/ --junitxml=../test-results-bid.xml -v
+            displayName: "Run Bid Service tests"
+            continueOnError: true
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "test-results-bid.xml"
+              testRunTitle: "Bid Service Tests"
+            displayName: "Publish Bid test results"
+
+      - job: TestDispute
+        displayName: "Tests - Dispute Service"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.11"
+            displayName: "Use Python 3.11"
+
+          - script: |
+              cd dispute_service
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: "Install Dispute Service dependencies"
+
+          - script: |
+              cd dispute_service
+              python -m pytest tests/ --junitxml=../test-results-dispute.xml -v
+            displayName: "Run Dispute Service tests"
+            continueOnError: true
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "test-results-dispute.xml"
+              testRunTitle: "Dispute Service Tests"
+            displayName: "Publish Dispute test results"
