@@ -4,19 +4,12 @@ Tests for dispute validation, status transitions, and event handling.
 """
 import pytest
 from datetime import datetime
-from fastapi.testclient import TestClient
 
-from main import app
-from models import Dispute
+from dispute_service.main import app
+from dispute_service.models import Dispute
 
 
 # Create test fixtures if they don't exist in conftest
-@pytest.fixture
-def client():
-    """FastAPI test client."""
-    return TestClient(app)
-
-
 @pytest.fixture
 def setup_test_db(db_session):
     """Setup test database before each test."""

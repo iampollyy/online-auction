@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -19,7 +19,7 @@ class DisputeCreate(DisputeBase):
 
 
 class DisputeStatusUpdate(BaseModel):
-    status: str
+    status: Optional[str] = None
     is_resolved: Optional[bool] = None
     resolved_by: Optional[str] = None
 
@@ -29,5 +29,4 @@ class DisputeResponse(DisputeBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

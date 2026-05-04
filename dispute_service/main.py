@@ -65,7 +65,7 @@ def update_dispute_status(
     data: DisputeStatusUpdate,
     db: Session = Depends(get_db)
 ):
-    logger.info(f"PATCH /disputes/{dispute_id}/status — new status: {data.status}")
+    logger.info(f"PATCH /disputes/{dispute_id}/status — update: {data.model_dump(exclude_unset=True)}")
     dispute = db.query(Dispute).filter(Dispute.dispute_id == dispute_id).first()
     if not dispute:
         logger.warning(f"Dispute {dispute_id} not found for status update")

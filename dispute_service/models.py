@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Text, func
 )
-from database import Base, SCHEMA
+from dispute_service.database import Base, SCHEMA
 
 
 class Dispute(Base):

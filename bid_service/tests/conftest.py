@@ -5,8 +5,8 @@ Uses an in-memory SQLite database so no real DB or Service Bus is needed.
 import sys
 from pathlib import Path
 
-# Add parent directory to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import types
 import pytest
@@ -29,7 +29,7 @@ def _set_sqlite_pragma(dbapi_conn, connection_record):
 
 _Base = declarative_base()
 
-_db_mod = types.ModuleType("database")
+_db_mod = types.ModuleType("bid_service.database")
 _db_mod.engine = TEST_ENGINE
 _db_mod.SessionLocal = TestSession
 _db_mod.Base = _Base
@@ -46,26 +46,30 @@ _db_mod.get_db = _get_db
 _db_mod.create_schema = lambda: None
 
 sys.modules["database"] = _db_mod
+sys.modules["bid_service.database"] = _db_mod
 
-_cfg_mod = types.ModuleType("config")
+_cfg_mod = types.ModuleType("bid_service.config")
 _cfg_mod.SERVICE_BUS_SEND_CONNECTION_STRING = ""
 _cfg_mod.QUEUE_NAME = "test-queue"
 sys.modules["config"] = _cfg_mod
+sys.modules["bid_service.config"] = _cfg_mod
 
-_ms_mod = types.ModuleType("message_sender")
+_ms_mod = types.ModuleType("bid_service.message_sender")
 _mock_sender = MagicMock()
 _mock_sender.send_message = MagicMock(return_value=True)
 _ms_mod.message_sender = _mock_sender
 _ms_mod.MessageSender = MagicMock
 sys.modules["message_sender"] = _ms_mod
+sys.modules["bid_service.message_sender"] = _ms_mod
 
-_seed_mod = types.ModuleType("seed")
+_seed_mod = types.ModuleType("bid_service.seed")
 _seed_mod.seed_data = lambda: None
 sys.modules["seed"] = _seed_mod
+sys.modules["bid_service.seed"] = _seed_mod
 
 
-from models import Auction, Bid  
-from database import Base        
+from bid_service.models import Auction, Bid
+from bid_service.database import Base
 from fastapi.testclient import TestClient
 
 
@@ -97,7 +101,7 @@ def mock_message_sender():
 @pytest.fixture()
 def client(db_session):
     """FastAPI TestClient with mocked dependencies for bid service tests."""
-    from main import app
+    from bid_service.main import app
     
     def _override_get_db():
         try:

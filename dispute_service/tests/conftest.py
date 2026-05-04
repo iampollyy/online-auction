@@ -5,16 +5,17 @@ Uses an in-memory SQLite database so tests remain fast and isolated.
 import sys
 from pathlib import Path
 
-# Add parent directory to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import pytest
+from unittest.mock import patch
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-from database import Base, get_db
+from dispute_service.database import Base, get_db
 
 # ── In-memory SQLite engine (StaticPool keeps one connection alive) ──
 engine_test = create_engine(
@@ -34,7 +35,7 @@ TestSessionLocal = sessionmaker(
 def setup_database():
     """Create tables before each test and drop them after."""
     # Override the schema so SQLite won't choke
-    from models import Dispute
+    from dispute_service.models import Dispute
     Dispute.__table_args__ = {}
     Dispute.__table__.schema = None
 
@@ -56,7 +57,7 @@ def db_session(setup_database):
 @pytest.fixture()
 def client(db_session):
     """FastAPI TestClient with the DB dependency overridden."""
-    from main import app  # import inside fixture to avoid startup side-effects
+    from dispute_service.main import app  # import inside fixture to avoid startup side-effects
 
     def _override_get_db():
         try:
@@ -65,6 +66,10 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = _override_get_db
-    with TestClient(app, raise_server_exceptions=False) as c:
-        yield c
+    with patch("dispute_service.main.create_schema"), \
+         patch("dispute_service.main.Base"), \
+         patch("dispute_service.main.seed_data"), \
+         patch("dispute_service.main.start_message_reader"):
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
     app.dependency_overrides.clear()

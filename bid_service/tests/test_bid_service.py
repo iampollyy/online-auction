@@ -5,9 +5,9 @@ import pytest
 from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 
-from main import app
-from models import Auction, Bid
-from message_sender import message_sender as mock_sender
+from bid_service.main import app
+from bid_service.models import Auction, Bid
+from bid_service.message_sender import message_sender as mock_sender
 
 
 client = TestClient(app)

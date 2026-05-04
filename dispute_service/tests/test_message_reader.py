@@ -1,12 +1,12 @@
 """Unit tests for the message_reader.process_message function."""
 import pytest
 from unittest.mock import patch, MagicMock
-from message_reader import process_message
-from models import Dispute
+from dispute_service.message_reader import process_message
+from dispute_service.models import Dispute
 
 
 class TestProcessMessage:
-    @patch("message_reader.SessionLocal")
+    @patch("dispute_service.message_reader.SessionLocal")
     def test_suspicious_bid_creates_dispute(self, mock_session_cls):
         mock_db = MagicMock()
         mock_session_cls.return_value = mock_db
@@ -30,7 +30,7 @@ class TestProcessMessage:
         mock_db.commit.assert_called_once()
         mock_db.close.assert_called_once()
 
-    @patch("message_reader.SessionLocal")
+    @patch("dispute_service.message_reader.SessionLocal")
     def test_suspicious_bid_rollback_on_error(self, mock_session_cls):
         mock_db = MagicMock()
         mock_session_cls.return_value = mock_db
@@ -50,7 +50,7 @@ class TestProcessMessage:
 
     def test_auction_completed_logs_info(self, caplog):
         import logging
-        with caplog.at_level(logging.INFO, logger="message_reader"):
+        with caplog.at_level(logging.INFO, logger="dispute_service.message_reader"):
             process_message({
                 "eventType": "AuctionCompleted",
                 "auctionId": 5,
@@ -61,7 +61,7 @@ class TestProcessMessage:
 
     def test_bid_placed_logs_info(self, caplog):
         import logging
-        with caplog.at_level(logging.INFO, logger="message_reader"):
+        with caplog.at_level(logging.INFO, logger="dispute_service.message_reader"):
             process_message({
                 "eventType": "BidPlaced",
                 "bidId": 10,
@@ -72,6 +72,6 @@ class TestProcessMessage:
 
     def test_unknown_event_logs_warning(self, caplog):
         import logging
-        with caplog.at_level(logging.WARNING, logger="message_reader"):
+        with caplog.at_level(logging.WARNING, logger="dispute_service.message_reader"):
             process_message({"eventType": "UnexpectedEvent"})
         assert "Unknown event type" in caplog.text

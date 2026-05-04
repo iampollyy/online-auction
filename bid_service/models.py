@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime, ForeignKey, func
 )
-from database import Base, SCHEMA
+from bid_service.database import Base, SCHEMA
 
 _FK_PREFIX = f"{SCHEMA}." if SCHEMA else ""
 
