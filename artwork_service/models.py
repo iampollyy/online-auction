@@ -32,12 +32,12 @@ class Artwork(Base):
     title = Column(String(200), nullable=False)
     artist_id = Column(
         Integer,
-        ForeignKey("artist.artist_id"),
+        ForeignKey(f"{SCHEMA}.artist.artist_id"),
         nullable=False
     )
     category_id = Column(
         Integer,
-        ForeignKey("categories.category_id"),
+        ForeignKey(f"{SCHEMA}.categories.category_id"),
         nullable=False
     )
     starting_price = Column(Float, nullable=False)
