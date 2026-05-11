@@ -3,6 +3,8 @@ from sqlalchemy import (
 )
 from artwork_service.database import Base, SCHEMA
 
+_FK_PREFIX = f"{SCHEMA}." if SCHEMA else ""
+
 
 class Artist(Base):
     __tablename__ = "artist"
@@ -32,12 +34,12 @@ class Artwork(Base):
     title = Column(String(200), nullable=False)
     artist_id = Column(
         Integer,
-        ForeignKey(f"{SCHEMA}.artist.artist_id"),
+        ForeignKey(f"{_FK_PREFIX}artist.artist_id"),
         nullable=False
     )
     category_id = Column(
         Integer,
-        ForeignKey(f"{SCHEMA}.categories.category_id"),
+        ForeignKey(f"{_FK_PREFIX}categories.category_id"),
         nullable=False
     )
     starting_price = Column(Float, nullable=False)
